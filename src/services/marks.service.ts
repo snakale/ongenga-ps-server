@@ -1,28 +1,41 @@
 import { Mark } from '../entities/mark';
 import { Student } from '../entities/student';
 import { AppReturnType } from '../entities/return-type.interface';
-import { getManager } from 'typeorm';
 import { SchoolSubject } from '../entities/subject';
 
 export class MarksService {
 
-    saveTeacherTermMarks(year: string, term: string, termMarks: Mark[]): Promise<AppReturnType> {
-        return new Promise( (resolve, reject) => {
+    saveTeacherTermMarks(termMarks, year, term, grade, schoolClass): Promise<AppReturnType> {
+        return new Promise( async (resolve, reject) => {
             try {
-                const marksRepo = getManager().getRepository(Mark);
-                const subjectsRepo = getManager().getRepository(SchoolSubject);
-                const studentRepo = getManager().getRepository(Student);
+
+                const params = {
+                    grade: grade, schoolClass: schoolClass, year: year, term: term
+                };
+
+                const savedMarks = await Mark.find( {
+                    where: params,
+                    relations: ['student', 'subject']
+                });
 
                 termMarks.forEach( async(mark) => {
-                    let newMark = new Mark();
-                    newMark.student = await studentRepo.findOne(mark.student.id);
-                    newMark.subject = await subjectsRepo.findOne(mark.subject.id);
+
+                    let newMark = savedMarks
+                        .find(oldMark => oldMark.subject.id === mark.subjectId && oldMark.student.id === mark.studentId);
+
+                    if (!newMark) {
+                        newMark = new Mark();
+                        newMark.student = await Student.findOne(mark.studentId);
+                        newMark.subject = await SchoolSubject.findOne(mark.subjectId);
+                    }                  
+                                        
                     newMark.ca_mark = mark.ca_mark;
-                    newMark.term = +term;
-                    newMark.year = +year;
+                    newMark.term = term;
+                    newMark.year = year;
                     newMark.exam_mark = mark.exam_mark;
-                    await marksRepo.save(newMark);
+                    await newMark.save().catch( e => console.error(e));
                 });
+                
                 resolve({success: true, message: 'Marks successfully saved'})
             } catch (e) {
                 reject(e);
@@ -33,12 +46,11 @@ export class MarksService {
     updateTeacherTermMarks(marks: Mark[]): Promise<AppReturnType> {
         return  new Promise( (resolve, _) => {
             try {
-                const marksRepo = getManager().getRepository(Mark);
                 marks.forEach( async(mark) => {
-                    let editMark = await marksRepo.findOne( mark.id );
+                    let editMark = await Mark.findOne( mark.id );
                     editMark.exam_mark = mark.exam_mark;
                     editMark.ca_mark = mark.ca_mark;
-                    await marksRepo.save(editMark);
+                    await editMark.save();
                 });
                 resolve({success: true, message: 'Successfully updated marks'});
             } catch(e) {
@@ -60,20 +72,27 @@ export class MarksService {
     }
 
     getTermMarkSheet(grade, schoolClass, year, term) {
+
         return new Promise( (resolve, reject) => {
             Mark.find({
                     where: {
-                        grade, schoolClass, year, term
-                    }
+                        grade: grade, schoolClass: schoolClass, year: year, term: term
+                    },
+                    relations: ['student', 'subject']
                 })
-                .then( data => resolve({success: true, data: data}))
+                .then( data => resolve({success: true, data: this.mapStudentIdSubjectIdToMarks(data) }))
                 .catch( e => reject({success: false, message: e.message}));
         });
     }
 
-    getAllTeacherTermMarks(teacherId: string, year: string, term: string): Promise<AppReturnType> {
-        return new Promise( (resolve, reject) => {
-            resolve({success: true, data: [] } as AppReturnType);
+    mapStudentIdSubjectIdToMarks(marks: Mark[]) {
+
+        return marks.map(mark => {
+            const studentId = mark.student.id;
+            const subjectId = mark.subject.id;
+            return { ...mark, ...{studentId}, ...{subjectId}};
         });
+        
     }
+
 }

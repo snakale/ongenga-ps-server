@@ -11,15 +11,29 @@ router.get('/term-marks', (req, res) => {
     // TODO: Fix Security vulnerability here... Logged in user must be authorized to edit those particular marks
     if ( isLoggedIn(req) ) {
         
-        const { grade, schoolClass, year, term } = req.body;
+        const { grade, schoolClass, year, term } = req.query;
 
-        marksService.getTermMarkSheet(grade, schoolClass, year, term)
+        marksService.getTermMarkSheet(+grade, +schoolClass, +year, +term)
             .then(data => res.status(200).json(data))
             .catch( e => res.status(200).json({success: false, message: e.message})); 
     } else {
         res.status(200).json( { success: false, message: 'User not autherized' });
     }
 });
+
+
+router.post('/term-marks', async(req: Request, res: Response) => {
+    if ( isLoggedIn(req) ){
+        const {marks, year, term, grade, schoolClass} = req.body;
+        marksService.saveTeacherTermMarks(marks, year, term, grade, schoolClass)
+            .then(data => res.status(200).json(data))
+            .catch( e => res.status(200).json({success: false, message: e.message})); 
+    } else {
+        res.status(200).json( { success: false, message: 'User not autherized to perform this actionssss' });
+    }
+});
+
+/*
 
 router.get('/', (req: Request, res: Response) => {
     
@@ -36,18 +50,7 @@ router.get('/', (req: Request, res: Response) => {
     }
 });
 
-router.post('/bulk', async(req: Request, res: Response) => {
-    if ( isLoggedIn(req) ){
-        const {year, term, marks} = req.body;
-        marksService.saveTeacherTermMarks(year, term, marks)
-            .then(data => res.status(200).json(data))
-            .catch( e => res.status(200).json({success: false, message: e.message})); 
-    } else {
-        res.status(200).json( { success: false, message: 'User not autherized to perform this actionssss' });
-    }
-});
-
-/*router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', (req: Request, res: Response) => {
     if ( loggedInUserIDMatch(req) && isLoggedInAdmin(req) ){
         marksService.updateUserProfile(req)
             .then(data => res.status(200).json(data))
