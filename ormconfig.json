@@ -1,0 +1,62 @@
+[
+    {
+        "name": "dev",
+        "type": "mysql",
+        "host": "localhost",
+        "port": 3306,
+        "username": "root",
+        "password": "",
+        "database": "ongenga",
+        "synchronize": true,
+        "logging": false,
+        "dropSchema": false,
+        "entities": ["src/entities/*.ts"],
+        "migrations": ["src/entities/migrations/**/*.ts"],
+        "subscribers": ["src/entities/subscribers/**/*.ts"],
+        "cli": {
+            "entitiesDir": "src/entities",
+            "migrationsDir": "src/entities/migrations",
+            "subscribersDir": "src/entities/subscribers"
+        }
+    },
+    {
+        "name": "prod",
+        "type": "mysql",
+        "host": "localhost",
+        "port": 3306,
+        "username": "root",
+        "password": "",
+        "database": "ongenga",
+        "synchronize": true,
+        "logging": false,
+        "dropSchema": false,
+        "entities": ["src/entities/*.ts"],
+        "migrations": ["src/entities/migrations/**/*.ts"],
+        "subscribers": ["src/entities/subscribers/**/*.ts"],
+        "cli": {
+            "entitiesDir": "src/entities",
+            "migrationsDir": "src/entities/migrations",
+            "subscribersDir": "src/entities/subscribers"
+        }
+    },
+    {
+        "name": "test",
+        "type": "mysql",
+        "host": "localhost",
+        "port": 3306,
+        "username": "root",
+        "password": "",
+        "database": "ongenga-test",
+        "synchronize": true,
+        "logging": false,
+        "dropSchema": true,
+        "entities": ["src/entities/*.ts"],
+        "migrations": ["src/entities/migrations/*.ts"],
+        "subscribers": ["src/entities/subscribers/*.ts"],
+        "cli": {
+            "entitiesDir": "src/entities",
+            "migrationsDir": "src/entities/migrations",
+            "subscribersDir": "src/entities/subscribers"
+        }
+    }
+]
