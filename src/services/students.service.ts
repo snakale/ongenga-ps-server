@@ -27,8 +27,6 @@ export class StudentsService {
             studentParents['parent2'] = parent2;
         }
 
-        console.log({studentParents});
-
         return new Promise( (resolve) => {
             Student.findOne(studentId)
                 .then( data => resolve( { success: true, data: studentParents }))
@@ -115,9 +113,39 @@ export class StudentsService {
         });
     }
 
-    async updateStudent(studentId) {
+    async updateStudent(studentData) {
 
-        let student = await Student.findOne(studentId)
+        let student = await Student.findOne(studentData.body.id);
+        const {names, surname, grade, gender, studentClass, dateOfBirth, teacher, parent1, parent2} = studentData.body;
+
+        if (!student) {
+            return new Promise( (resolve) => resolve({ success: false, message: 'Student not found in System' }));
+        }
+
+        student.surname = surname;
+        student.names = names;
+        student.grade = grade;
+        student.gender = gender;
+        student.studentClass = studentClass;
+        student.dateOfBirth = dateOfBirth;
+        student.registerTeacher = teacher;
+        
+        let parent1Object = await Parent.findOne(parent1.id);
+        let parent2Object = await Parent.findOne(parent2.id);
+
+        if (parent1Object) {
+            parent1Object.name = parent1.name;
+            parent1Object.surname = parent1.surname;
+            parent1Object.contactDetails = parent1.contactDetails;
+        }
+
+        if (parent2Object) {
+            parent2Object.name = parent2.name;
+            parent2Object.surname = parent2.surname;
+            parent2Object.contactDetails = parent2.contactDetails;
+        }
+
+        await Promise.all([parent1Object.save(), parent2Object.save()]);
 
         return new Promise( (resolve) => {
             student.save()

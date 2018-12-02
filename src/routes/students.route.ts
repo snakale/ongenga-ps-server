@@ -48,6 +48,9 @@ router.get('/:id', async(req, res) => {
 
 router.put('/:id', async(req, res) => { 
         if ( isLoggedIn(req) ) {
+                
+                const { id } = req.params;
+
                 StudentsService.updateStudent(req)
                         .then(data => res.status(200).json(data))
                         .catch( e => res.status(200).json({success: false, message: e.message}));
