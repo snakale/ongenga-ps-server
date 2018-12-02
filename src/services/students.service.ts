@@ -1,7 +1,6 @@
 import { Student } from "../entities/student";
 import { Parent } from "../entities/parent";
 import { User } from "../entities/user";
-
 export class StudentsService {
 
     public getStudent(studentId) {
@@ -10,6 +9,30 @@ export class StudentsService {
             Student.findOne(studentId)
                 .then( data => resolve( { success: true, data: data }))
                 .catch( () => resolve( { success: false, message: 'An error occured while getting students from DB' } ));
+        });
+    }
+
+    public async getStudentParents(studentId) {
+
+        const student = await Student.findOne(studentId);
+        const studentParents: any = {};
+        
+        if (student && student.parent1Id) {
+            const parent1 = await Parent.findOne(student.parent1Id);
+            studentParents['parent1'] = parent1;
+        }
+
+        if (student && student.parent2Id) {
+            const parent2 = await Parent.findOne(student.parent2Id);
+            studentParents['parent2'] = parent2;
+        }
+
+        console.log({studentParents});
+
+        return new Promise( (resolve) => {
+            Student.findOne(studentId)
+                .then( data => resolve( { success: true, data: studentParents }))
+                .catch( () => resolve( { success: false, message: 'An error occured while getting student\'s parents from DB' } ));
         });
     }
 
@@ -64,13 +87,14 @@ export class StudentsService {
         return parentArray;
     }
 
-    async addNewStudent({ names, surname, studentGrade, studentClass, gender, teacher, parent1, parent2 }) {
+    async addNewStudent({ names, surname, studentGrade, studentClass, dateOfBirth, gender, teacher, parent1, parent2 }) {
 
         let newStudent = new Student();
         newStudent.names = names;
         newStudent.surname = surname;
         newStudent.grade = studentGrade;
         newStudent.gender = gender;
+        newStudent.dateOfBirth = dateOfBirth;
         newStudent.studentClass = studentClass;
 
         const parent1Object = await this.createStudentParentEntityObject(parent1);

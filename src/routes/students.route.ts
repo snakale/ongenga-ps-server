@@ -18,6 +18,20 @@ router.get('/', async(req: Request, res: Response) => {
         
 });
 
+router.get('/parents', async(req: Request, res: Response) => {
+        
+        if ( isLoggedIn(req) ) {
+
+                const { studentId } = req.params;
+
+                StudentsService.getStudentParents(studentId)
+                        .then(data => res.status(200).json(data))
+                        .catch( e => res.status(200).json( { success: false, message: e.message } ));
+        } else {
+                res.status(200).json( {success: false, message: 'User unauthenticated'} as AppReturnType );
+        } 
+});
+
 router.get('/:id', async(req, res) => {
         if ( isLoggedIn(req) ) {
 

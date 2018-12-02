@@ -11,6 +11,7 @@ export class Student extends BaseEntity {
     @Column() grade: number;
     @Column() gender: string;
     @Column() studentClass: string; 
+    @Column() dateOfBirth: Date;
 
     @ManyToOne(type => User)
     @JoinColumn()
